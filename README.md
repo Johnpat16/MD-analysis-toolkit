@@ -22,6 +22,7 @@ Implemented analyses include:
 ### Structural Stability
 
 * **RMSD (Root Mean Square Deviation)**
+* **FFT and PS ( Fast Fourier Transform and Power Spectrum)**
 * **RMSF (Root Mean Square Fluctuation)**
 
 ### Dynamic Correlation
