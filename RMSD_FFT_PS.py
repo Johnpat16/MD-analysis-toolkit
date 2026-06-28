@@ -1,7 +1,58 @@
-# rmsd_fft_psd.py
-
-```python
 #!/usr/bin/env python3
+# RMSD_FFT_PS.py
+#
+# Purpose:
+#   Compute per-frame RMSD time series for several selections from an AMBER
+#   trajectory and estimate their power spectral density (PSD) using an FFT.
+#   The script fits a power-law (P(f) ~ f^alpha) to the PSD over a chosen
+#   frequency window and plots the RMSD traces and PSDs with the fits.
+#
+# How it works (high-level):
+#   1. Parse command-line arguments for topology (-p), trajectory (-t), and
+#      the time step between frames (--dt, in seconds).
+#   2. Load the system with MDAnalysis (Universe) using the provided files.
+#   3. Compute RMSD time series for a set of selections using
+#      MDAnalysis.analysis.rms.RMSD. The reference frame for the RMSD is the
+#      first frame (ref_frame=0).
+#   4. Convert each RMSD trace into a PSD using a Hann (Hanning) window and
+#      numpy's real FFT (rfft). The PSD is scaled to produce a one-sided power
+#      spectral density with correct normalization (units depend on the input
+#      signal and dt).
+#   5. Fit a power-law to the PSD in log-log space over a selected frequency
+#      range (defaults are provided but can be changed in the fit_power_law
+#      function). The slope returned is the exponent alpha in P(f) ~ f^alpha.
+#   6. Plot the RMSD time series and PSDs (with fitted power-law lines) and
+#      print the fitted exponents to the console.
+#
+# Important notes and usage tips:
+#   - Dependencies: Python 3, numpy, matplotlib, MDAnalysis.
+#   - The time step (--dt) must be given in seconds. The default is 100e-12
+#     (100 ps). The frequency axis of the PSD is therefore in Hz.
+#   - Selections for regions of interest are defined near the top of the
+#     script (region1_res and region2_res). Edit these lists or the
+#     selection strings if you want different residues or atom groups.
+#   - The PSD normalization uses the squared window sum and dt so that the
+#     PSD integrates consistently with discrete-time Parseval relations; if
+#     you need a different convention (e.g., density per Hz or per rad/s)
+#     adjust the compute_psd implementation accordingly.
+#   - The default power-law fitting window (fmin=1e9, fmax=5e10) is tuned
+#     for the default dt and molecular dynamics time scales used here — you
+#     will likely need to change fmin/fmax to match your data's frequency
+#     range and sampling.
+#   - Example usage:
+#       python3 RMSD_FFT_PS.py -p system.parm7 -t traj.nc --dt 100e-12
+#
+#   - Outputs: interactive matplotlib plots and printed alpha exponents.
+#
+# Small comments on implementation choices:
+#   - RMSD is computed using MDAnalysis.analysis.rms.RMSD which performs an
+#     optimal superposition (rototranslation) to the reference frame before
+#     computing RMSD for the selected atoms.
+#   - The PSD uses a Hann window to reduce spectral leakage. The one-sided
+#     PSD scaling multiplies all interior frequencies by 2 to conserve total
+#     power.
+#
+# Author: adapted/annotated for clarity
 
 import argparse
 import numpy as np
@@ -194,4 +245,3 @@ print(f"Backbone : {alpha_bb:.3f}")
 print(f"Region 1 : {alpha_r1:.3f}")
 print(f"Region 2 : {alpha_r2:.3f}")
 print(f"Joint    : {alpha_joint:.3f}")
-```
