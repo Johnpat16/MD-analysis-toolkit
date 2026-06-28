@@ -40,28 +40,85 @@ Implemented analyses include:
 * **2D Free Energy Landscapes (FEL)**
 * **3D Free Energy Landscapes**
 
-## Requirements
+## Installation
 
-The scripts require:
-
-* Python 3.x
-* NumPy
-* Matplotlib
-* SciPy
-* MDAnalysis
-
-Install dependencies:
+### Option 1: virtual environment
 
 ```bash
-pip install numpy matplotlib scipy MDAnalysis
+python3 -m venv md_env
+source md_env/bin/activate
+pip install -r requirements.txt
 ```
+
+On Windows PowerShell, activate the same environment with:
+
+```powershell
+.\md_env\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+### Option 2: requirements file
+
+If you already have a Python environment, install the dependencies directly:
+
+```bash
+pip install -r requirements.txt
+```
+
+The requirements file includes:
+
+- numpy
+- scipy
+- matplotlib
+- pandas
+- scikit-learn
+- MDAnalysis
 
 ## Input Files
 
-Supported input formats:
+The scripts are written for AMBER-format inputs:
 
-* **Topology:** `.parm7`
-* **Trajectory:** `.nc`
+- `-p`, `--topology`: topology file, usually `.parm7`
+- `-t`, `--trajectory`: trajectory file, usually `.nc`
+- `-s`, `--selection`: optional MDAnalysis atom selection
+
+The default atom selection is:
+
+```text
+protein and name CA
+```
+
+Use a different selection when the scientific question requires it, for example:
+
+```bash
+python RMSF/rmsf_analysis.py -p topology.parm7 -t trajectory.nc -s "protein and backbone"
+```
+
+## How to Run
+
+Run each analysis from the repository root and pass the topology and trajectory explicitly:
+
+```bash
+python RMSF/rmsf_analysis.py -p topology.parm7 -t trajectory.nc
+python RMSD/rmsd_analysis.py -p topology.parm7 -t trajectory.nc
+python DCCM/dccm_analysis.py -p topology.parm7 -t trajectory.nc
+python PCA/pca_analysis.py -p topology.parm7 -t trajectory.nc
+python Porcupine/porcupine_plot.py -p topology.parm7 -t trajectory.nc
+python FEL/fel_3d.py -p topology.parm7 -t trajectory.nc
+python Autocorrelation/rmsd_autocorrelation.py -p topology.parm7 -t trajectory.nc
+```
+
+Common options:
+
+```text
+-p / --topology      AMBER topology file (.parm7)
+-t / --trajectory    AMBER NetCDF trajectory file (.nc)
+-s / --selection     Optional atom selection; default is "protein and name CA"
+-o / --output-prefix Prefix for output files
+--no-show            Save figures without opening an interactive plot window
+```
+
+RMSD and autocorrelation scripts also accept `--dt`, the time between frames in seconds. FEL accepts `--temperature` and `--grid`. PCA and porcupine scripts accept `-n / --n-components`.
 
 ## Repository Structure
 
